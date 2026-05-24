@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinese Zodiac — Mandarin Zest</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --orange:#f37a48;--orange-dark:#d95f2c;--orange-light:#f8dacd;
+    --green:#228b22;--green-dark:#1a6b1a;--green-light:#e0f4e0;
+    --white:#ffffff;--ink:#1c1c1c;--ink-mid:#555555;--ink-light:#999999;
+    --surface:#fdfcfa;--border:#ecddd5;
+    --gold:#c9960c;--gold-light:#fef6e0;
+  }
+  body{font-family:'Outfit',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0}
+
+  /* TOPBAR */
+  .topbar{width:100%;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:16px 2rem}
+  .logo-text{font-size:20px;font-weight:600;color:var(--ink);letter-spacing:-0.01em}
+  .logo-text span{color:var(--orange)}
+
+  .app{width:100%;max-width:600px;padding:2.5rem 1.25rem 4rem}
+
+  /* HERO */
+  .hero{text-align:center;margin-bottom:2.5rem}
+  .hero-chars{font-family:'Noto Serif SC',serif;font-size:48px;font-weight:700;letter-spacing:0.08em;margin-bottom:1.25rem;line-height:1}
+  .hero-chars .c1{color:var(--orange)}
+  .hero-chars .c2{color:var(--green)}
+  .hero-chars .c3{color:var(--orange-light);-webkit-text-stroke:1.5px var(--orange)}
+  .hero-chars .c4{color:var(--green-light);-webkit-text-stroke:1.5px var(--green)}
+  .hero h1{font-size:24px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px}
+  .hero p{font-size:15px;color:var(--ink-mid)}
+
+  /* INPUT CARD */
+  .input-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1rem;position:relative;overflow:hidden}
+  .input-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--orange),var(--green))}
+  .input-card label{display:block;font-size:14px;font-weight:500;color:var(--ink);margin-bottom:10px}
+  .date-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem}
+  .select-wrap{position:relative}
+  .select-wrap select{width:100%;appearance:none;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 36px 12px 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink);cursor:pointer;outline:none;transition:border-color 0.15s}
+  .select-wrap select:focus{border-color:var(--orange)}
+  .select-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--ink-light);pointer-events:none;font-size:13px}
+  .calc-btn{width:100%;background:var(--orange);color:white;border:none;border-radius:12px;padding:15px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.15s,transform 0.1s}
+  .calc-btn:hover{background:var(--orange-dark);transform:translateY(-1px)}
+
+  /* RESULT */
+  .result-screen{display:none}
+
+  /* Zodiac hero card */
+  .zodiac-hero{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:2rem;text-align:center;margin-bottom:1rem;position:relative;overflow:hidden}
+  .zodiac-hero::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--orange),var(--green))}
+  .zodiac-animal-big{font-family:'Noto Serif SC',serif;font-size:90px;line-height:1;margin-bottom:0.5rem;filter:drop-shadow(0 4px 12px rgba(243,122,72,0.15))}
+  .zodiac-name-zh{font-family:'Noto Serif SC',serif;font-size:32px;font-weight:700;color:var(--ink);letter-spacing:0.05em;margin-bottom:4px}
+  .zodiac-name-pinyin{font-size:18px;color:var(--orange);font-weight:400;letter-spacing:0.08em;margin-bottom:4px}
+  .zodiac-name-en{font-size:15px;color:var(--ink-mid);font-weight:500;margin-bottom:1.25rem}
+  .tag-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:0;margin-top:0.25rem}
+  .tag{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500}
+  .tag-element{background:var(--gold-light);color:var(--gold);border:1px solid #f0d060}
+  .tag-year{background:var(--orange-light);color:var(--orange-dark);border:1px solid var(--orange-light)}
+  .tag-yin{background:var(--green-light);color:var(--green);border:1px solid #b8ddb8}
+
+  /* Chinese calendar card */
+  .cal-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1rem}
+  .card-title{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light);margin-bottom:1rem}
+  .cal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cal-item{background:var(--surface);border-radius:12px;padding:12px 14px}
+  .cal-item-label{font-size:11px;color:var(--ink-light);font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+  .cal-item-zh{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:2px}
+  .cal-item-pinyin{font-size:12px;color:var(--orange);letter-spacing:0.04em;margin-bottom:1px}
+  .cal-item-en{font-size:12px;color:var(--ink-mid)}
+
+  /* Info sections */
+  .info-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1rem}
+  .info-body{font-size:14px;color:var(--ink-mid);line-height:1.7}
+  .trait-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:0.75rem}
+  .trait-pill{background:var(--orange-light);color:var(--orange-dark);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500}
+
+  /* Compatibility */
+  .compat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .compat-card{border-radius:12px;padding:12px}
+  .compat-card.good{background:var(--green-light)}
+  .compat-card.bad{background:#fdecea}
+  .compat-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
+  .compat-label.good{color:var(--green)}
+  .compat-label.bad{color:#c0392b}
+  .compat-signs{display:flex;flex-direction:column;gap:5px}
+  .compat-sign{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
+  .compat-sign-emoji{font-size:18px;line-height:1}
+  .compat-sign-zh{font-family:'Noto Serif SC',serif;font-weight:600;font-size:14px}
+  .compat-sign-info{color:var(--ink-mid);font-size:12px}
+
+  /* Chengyu */
+  .chengyu-list{display:flex;flex-direction:column;gap:14px}
+  .chengyu-item{border-left:3px solid var(--orange);padding-left:14px}
+  .chengyu-zh{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:0.06em;margin-bottom:2px}
+  .chengyu-pinyin{font-size:13px;color:var(--orange);letter-spacing:0.06em;margin-bottom:4px}
+  .chengyu-meaning{font-size:13px;color:var(--ink-mid);line-height:1.5}
+  .chengyu-relevance{font-size:12px;color:var(--ink-light);margin-top:3px;font-style:italic}
+
+  /* Famous people */
+  .famous-list{display:flex;flex-wrap:wrap;gap:8px}
+  .famous-pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:13px;color:var(--ink-mid)}
+
+  /* Buttons */
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0.25rem}
+  .restart-btn{background:var(--white);color:var(--ink);border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.15s}
+  .restart-btn:hover{background:var(--orange-light)}
+  .share-btn{background:var(--green);color:white;border:none;border-radius:12px;padding:14px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.15s}
+  .share-btn:hover{background:var(--green-dark)}
+
+  @keyframes fadeSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .anim{animation:fadeSlide 0.35s ease forwards}
+  .anim-2{animation:fadeSlide 0.35s 0.1s ease both}
+  .anim-3{animation:fadeSlide 0.35s 0.2s ease both}
+  .anim-4{animation:fadeSlide 0.35s 0.3s ease both}
+  .anim-5{animation:fadeSlide 0.35s 0.4s ease both}
+  .anim-6{animation:fadeSlide 0.35s 0.5s ease both}
+  .anim-7{animation:fadeSlide 0.35s 0.6s ease both}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo-text">Mandarin <span>Zest</span></div>
+</div>
+
+<div class="app">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-chars"><span class="c1">生</span><span class="c2">肖</span><span class="c3">运</span><span class="c4">程</span></div>
+    <h1>Your Chinese Zodiac</h1>
+    <p>Discover your sign, element, and what the stars say — in Chinese</p>
+  </div>
+
+  <!-- INPUT -->
+  <div id="inputScreen">
+    <div class="input-card">
+      <label>Enter your date of birth</label>
+      <div class="date-row">
+        <div class="select-wrap">
+          <select id="selDay"></select>
+        </div>
+        <div class="select-wrap">
+          <select id="selMonth">
+            <option value="1">January</option><option value="2">February</option>
+            <option value="3">March</option><option value="4">April</option>
+            <option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option>
+            <option value="9">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="select-wrap">
+          <select id="selYear"></select>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calculate()">Reveal my zodiac →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-screen" id="resultScreen">
+
+    <div class="zodiac-hero anim">
+      <div class="zodiac-animal-big" id="rEmoji"></div>
+      <div class="zodiac-name-zh" id="rZh"></div>
+      <div class="zodiac-name-pinyin" id="rPinyin"></div>
+      <div class="zodiac-name-en" id="rEn"></div>
+      <div class="tag-row">
+        <div class="tag tag-element" id="rElement"></div>
+        <div class="tag tag-year" id="rYear"></div>
+        <div class="tag tag-yin" id="rYinYang"></div>
+      </div>
+    </div>
+
+    <!-- Chinese calendar -->
+    <div class="cal-card anim-2">
+      <div class="card-title">Your date in the Chinese calendar</div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- Personality -->
+    <div class="info-card anim-3">
+      <div class="card-title">Personality &amp; symbolism</div>
+      <div class="info-body" id="rPersonality"></div>
+      <div class="trait-pills" id="rTraits"></div>
+    </div>
+
+    <!-- Compatibility -->
+    <div class="info-card anim-4">
+      <div class="card-title">Compatibility</div>
+      <div class="compat-grid" id="rCompat"></div>
+    </div>
+
+    <!-- Chengyu -->
+    <div class="info-card anim-5">
+      <div class="card-title">成语 &amp; expressions for your sign</div>
+      <div class="chengyu-list" id="rChengyu"></div>
+    </div>
+
+    <!-- Famous people -->
+    <div class="info-card anim-6">
+      <div class="card-title">Famous people born in the year of your sign</div>
+      <div class="famous-list" id="rFamous"></div>
+    </div>
+
+    <div class="btn-row anim-7">
+      <button class="restart-btn" onclick="restart()">← Try another date</button>
+      <button class="share-btn" onclick="shareResult()">Share my sign</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Populate selectors ────────────────────────────────────────
+(function(){
+  const dayEl = document.getElementById('selDay');
+  for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=String(d).padStart(2,'0');dayEl.appendChild(o);}
+  const yrEl = document.getElementById('selYear');
+  const curY = new Date().getFullYear();
+  for(let y=curY;y>=1924;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yrEl.appendChild(o);}
+})();
+
+// ── Zodiac data ───────────────────────────────────────────────
+const ZODIAC = [
+  {
+    name:'Rat', zh:'鼠', py:'Shǔ', emoji:'🐭',
+    years:[1924,1936,1948,1960,1972,1984,1996,2008,2020],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yang',
+    personality:'The Rat is the first sign of the Chinese zodiac and symbolises intelligence, adaptability, and resourcefulness. Rats are quick-witted, charming, and skilled at finding creative solutions to problems. They are sociable and observant, often noticing what others miss. Though sometimes perceived as opportunistic, they are deeply loyal to those they trust and make devoted friends and partners.',
+    traits:['Intelligent','Adaptable','Charming','Resourceful','Ambitious'],
+    good_compat:[{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Deep mutual respect and balance'},{z:'Dragon',zh:'龙',py:'Lóng',em:'🐉',why:'Shared ambition and energy'},{z:'Monkey',zh:'猴',py:'Hóu',em:'🐒',why:'Both clever and quick-thinking'}],
+    bad_compat:[{z:'Horse',zh:'马',py:'Mǎ',em:'🐴',why:'Clashing independence'},{z:'Rooster',zh:'鸡',py:'Jī',em:'🐓',why:'Conflicting approaches to life'}],
+    chengyu:[
+      {zh:'随机应变',py:'suí jī yìng biàn',meaning:'To adapt to circumstances as they arise',rel:'Reflects the Rat\'s legendary adaptability and quick thinking in any situation'},
+      {zh:'足智多谋',py:'zú zhì duō móu',meaning:'Full of wisdom and resourceful strategies',rel:'Captures the Rat\'s strategic mind and ability to plan several steps ahead'},
+      {zh:'见缝插针',py:'jiàn fèng chā zhēn',meaning:'To squeeze a needle into every crack — seize every opportunity',rel:'The Rat\'s talent for spotting and seizing opportunities others overlook'},
+    ],
+    famous:['Mozart','Shakespeare','Winston Churchill','George Washington','Scarlett Johansson','Eminem','Prince Harry'],
+  },
+  {
+    name:'Ox', zh:'牛', py:'Niú', emoji:'🐮',
+    years:[1925,1937,1949,1961,1973,1985,1997,2009,2021],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yin',
+    personality:'The Ox is the symbol of diligence, reliability, and steadfast determination. Those born under this sign are known for their tireless work ethic and strong moral compass. They rarely seek the spotlight but build success slowly and surely through patience and perseverance. Ox people are deeply honest, sometimes blunt, and value tradition and stability above all. They make loyal, dependable partners and leaders.',
+    traits:['Diligent','Reliable','Patient','Honest','Strong-willed'],
+    good_compat:[{z:'Rat',zh:'鼠',py:'Shǔ',em:'🐭',why:'Complementary strengths'},{z:'Snake',zh:'蛇',py:'Shé',em:'🐍',why:'Shared depth and determination'},{z:'Rooster',zh:'鸡',py:'Jī',em:'🐓',why:'Both hardworking and grounded'}],
+    bad_compat:[{z:'Dragon',zh:'龙',py:'Lóng',em:'🐉',why:'Dragon finds Ox too rigid'},{z:'Goat',zh:'羊',py:'Yáng',em:'🐑',why:'Very different values and pace'}],
+    chengyu:[
+      {zh:'孜孜不倦',py:'zī zī bù juàn',meaning:'Tireless and diligent, never weary of working',rel:'The Ox\'s defining quality — relentless dedication to the task at hand'},
+      {zh:'脚踏实地',py:'jiǎo tā shí dì',meaning:'To keep both feet firmly on the ground — be practical',rel:'The Ox never chases fantasies; every step is grounded and deliberate'},
+      {zh:'持之以恒',py:'chí zhī yǐ héng',meaning:'To persist with unwavering consistency',rel:'Patience and endurance are the Ox\'s greatest weapons'},
+    ],
+    famous:['Barack Obama','Vincent van Gogh','Walt Disney','Napoleon','Meryl Streep','George Clooney'],
+  },
+  {
+    name:'Tiger', zh:'虎', py:'Hǔ', emoji:'🐯',
+    years:[1926,1938,1950,1962,1974,1986,1998,2010,2022],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yang',
+    personality:'The Tiger commands respect as a symbol of power, bravery, and natural authority. Tigers are charismatic and passionate leaders who charge into challenges without hesitation. They are fiercely protective of those they love and have an innate sense of justice. Impulsive and unpredictable, they live intensely and burn brightly. Their confidence can border on arrogance, but their genuine courage and warmth win people over.',
+    traits:['Brave','Charismatic','Passionate','Protective','Unpredictable'],
+    good_compat:[{z:'Horse',zh:'马',py:'Mǎ',em:'🐴',why:'Mutual fire and freedom'},{z:'Dog',zh:'狗',py:'Gǒu',em:'🐶',why:'Shared loyalty and values'},{z:'Pig',zh:'猪',py:'Zhū',em:'🐷',why:'Tiger\'s energy balanced by Pig\'s warmth'}],
+    bad_compat:[{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Power struggles inevitable'},{z:'Snake',zh:'蛇',py:'Shé',em:'🐍',why:'Deep mutual mistrust'}],
+    chengyu:[
+      {zh:'虎虎生威',py:'hǔ hǔ shēng wēi',meaning:'Full of the vigour and might of a tiger',rel:'Perfectly captures the Tiger\'s commanding presence and natural authority'},
+      {zh:'初生牛犊不怕虎',py:'chū shēng niú dú bù pà hǔ',meaning:'A newborn calf is not afraid of tigers — fearless courage',rel:'The Tiger\'s fearless approach to life — charging forward without hesitation'},
+      {zh:'龙争虎斗',py:'lóng zhēng hǔ dòu',meaning:'A dragon fights a tiger — fierce competition between equals',rel:'The Tiger thrives in high-stakes battles and rises to meet great opponents'},
+    ],
+    famous:['Leonardo DiCaprio','Tom Cruise','Marilyn Monroe','Queen Elizabeth II','Beethoven','Sun Yat-sen'],
+  },
+  {
+    name:'Rabbit', zh:'兔', py:'Tù', emoji:'🐰',
+    years:[1927,1939,1951,1963,1975,1987,1999,2011,2023],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yin',
+    personality:'The Rabbit is the luckiest sign in the Chinese zodiac, associated with grace, diplomacy, and an exquisite aesthetic sensibility. Rabbit people are gentle, thoughtful, and gifted communicators who prefer harmony over conflict. They are creative, deeply empathetic, and often quietly perceptive. Though sometimes seen as cautious or conflict-avoidant, this reflects wisdom rather than weakness — Rabbits achieve their goals through tact and patience.',
+    traits:['Graceful','Diplomatic','Creative','Empathetic','Perceptive'],
+    good_compat:[{z:'Goat',zh:'羊',py:'Yáng',em:'🐑',why:'Artistic souls in harmony'},{z:'Pig',zh:'猪',py:'Zhū',em:'🐷',why:'Both gentle and warm-hearted'},{z:'Dog',zh:'狗',py:'Gǒu',em:'🐶',why:'Trust and mutual understanding'}],
+    bad_compat:[{z:'Rooster',zh:'鸡',py:'Jī',em:'🐓',why:'Rooster\'s bluntness wounds Rabbit'},{z:'Rat',zh:'鼠',py:'Shǔ',em:'🐭',why:'Different emotional wavelengths'}],
+    chengyu:[
+      {zh:'温文尔雅',py:'wēn wén ěr yǎ',meaning:'Gentle, refined, and cultured in manner',rel:'The Rabbit\'s signature grace and elegant approach to all things'},
+      {zh:'以柔克刚',py:'yǐ róu kè gāng',meaning:'Use softness to overcome hardness',rel:'The Rabbit achieves through gentle diplomacy what others cannot through force'},
+      {zh:'八面玲珑',py:'bā miàn líng lóng',meaning:'Clever and smooth in all directions — socially adept',rel:'The Rabbit\'s gift for navigating social situations with effortless grace'},
+    ],
+    famous:['Albert Einstein','Frank Sinatra','Angelina Jolie','Brad Pitt','Cary Grant','Confucius'],
+  },
+  {
+    name:'Dragon', zh:'龙', py:'Lóng', emoji:'🐉',
+    years:[1928,1940,1952,1964,1976,1988,2000,2012,2024],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yang',
+    personality:'The Dragon is the most auspicious and powerful sign in the Chinese zodiac — a symbol of luck, strength, and imperial greatness. Dragons are visionary, ambitious, and magnetic. They inspire those around them and are drawn to grand ideas and bold ventures. Natural leaders, they can be demanding and occasionally arrogant, but their energy and confidence are genuinely captivating. In Chinese culture, the Dragon is revered above all other signs.',
+    traits:['Charismatic','Ambitious','Visionary','Confident','Magnetic'],
+    good_compat:[{z:'Rat',zh:'鼠',py:'Shǔ',em:'🐭',why:'Shared ambition and admiration'},{z:'Monkey',zh:'猴',py:'Hóu',em:'🐒',why:'Both bold and intellectually matched'},{z:'Rooster',zh:'鸡',py:'Jī',em:'🐓',why:'Complementary strengths'}],
+    bad_compat:[{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Both too dominant'},{z:'Dog',zh:'狗',py:'Gǒu',em:'🐶',why:'Fundamental mistrust'}],
+    chengyu:[
+      {zh:'龙腾虎跃',py:'lóng téng hǔ yuè',meaning:'Dragons soar and tigers leap — vigorous and magnificent',rel:'The Dragon\'s boundless energy and awe-inspiring presence in everything they do'},
+      {zh:'叱咤风云',py:'chì zhà fēng yún',meaning:'To command the wind and clouds — dominating and awe-inspiring',rel:'The Dragon\'s natural ability to command any room and shape events around them'},
+      {zh:'一飞冲天',py:'yī fēi chōng tiān',meaning:'With one leap, soar to the sky — sudden great success',rel:'The Dragon\'s defining trajectory — explosive rise to greatness'},
+    ],
+    famous:['Bruce Lee','Jackie Chan','Vladimir Putin','Rihanna','Adele','John Lennon','Martin Luther King Jr.'],
+  },
+  {
+    name:'Snake', zh:'蛇', py:'Shé', emoji:'🐍',
+    years:[1929,1941,1953,1965,1977,1989,2001,2013,2025],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yin',
+    personality:'The Snake is a symbol of wisdom, mystery, and deep intuition. Snake people are thoughtful and philosophical, often possessing an almost psychic sense of people and situations. They are elegant, private, and intensely focused — when a Snake commits to a goal, they pursue it with quiet, relentless determination. They rarely reveal their full depth, which gives them an air of enigmatic allure. In Chinese culture, the Snake is considered the philosopher of the zodiac.',
+    traits:['Wise','Intuitive','Elegant','Mysterious','Determined'],
+    good_compat:[{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Shared depth and quiet strength'},{z:'Rooster',zh:'鸡',py:'Jī',em:'🐓',why:'Mutual intelligence and ambition'},{z:'Monkey',zh:'猴',py:'Hóu',em:'🐒',why:'Both strategic and quick-minded'}],
+    bad_compat:[{z:'Tiger',zh:'虎',py:'Hǔ',em:'🐯',why:'Deep and lasting mutual mistrust'},{z:'Pig',zh:'猪',py:'Zhū',em:'🐷',why:'Opposing worldviews'}],
+    chengyu:[
+      {zh:'深谋远虑',py:'shēn móu yuǎn lǜ',meaning:'Far-sighted and strategically wise',rel:'The Snake plans ten steps ahead, seeing what others cannot even imagine yet'},
+      {zh:'洞若观火',py:'dòng ruò guān huǒ',meaning:'Crystal clear understanding — as clear as watching a fire',rel:'The Snake\'s penetrating insight into people and situations'},
+      {zh:'韬光养晦',py:'tāo guāng yǎng huì',meaning:'To hide one\'s light and bide one\'s time',rel:'The Snake\'s strategy of quiet accumulation before striking at exactly the right moment'},
+    ],
+    famous:['Abraham Lincoln','Darwin','Picasso','Audrey Hepburn','J.F. Kennedy','Taylor Swift'],
+  },
+  {
+    name:'Horse', zh:'马', py:'Mǎ', emoji:'🐴',
+    years:[1930,1942,1954,1966,1978,1990,2002,2014,2026],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yang',
+    personality:'The Horse is a symbol of freedom, vitality, and tireless energy. Horse people are passionate, outgoing, and incredibly independent — they crave open spaces, new experiences, and the thrill of the journey. Warm and enthusiastic, they light up every room and inspire others with their energy. They can be impulsive and restless, sometimes abandoning projects before completion, but their zest for life and genuine openness make them irresistible companions.',
+    traits:['Free-spirited','Energetic','Outgoing','Passionate','Independent'],
+    good_compat:[{z:'Tiger',zh:'虎',py:'Hǔ',em:'🐯',why:'Mutual fire and adventure'},{z:'Goat',zh:'羊',py:'Yáng',em:'🐑',why:'Complementary energies'},{z:'Dog',zh:'狗',py:'Gǒu',em:'🐶',why:'Loyalty and shared values'}],
+    bad_compat:[{z:'Rat',zh:'鼠',py:'Shǔ',em:'🐭',why:'Fundamentally opposing natures'},{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Horse finds Ox too restrictive'}],
+    chengyu:[
+      {zh:'马到成功',py:'mǎ dào chéng gōng',meaning:'Success comes as soon as the horse arrives — immediate victory',rel:'The Horse\'s ability to charge into any endeavour and achieve rapid success'},
+      {zh:'一马当先',py:'yī mǎ dāng xiān',meaning:'The first horse to lead — to forge ahead of all others',rel:'The Horse\'s natural instinct to lead from the front and set the pace'},
+      {zh:'志在四方',py:'zhì zài sì fāng',meaning:'Ambitions point in all four directions — boundless aspirations',rel:'The Horse\'s insatiable wanderlust and hunger for new horizons'},
+    ],
+    famous:['Genghis Khan','Isaac Newton','Rembrandt','Chopin','Jimi Hendrix','Kobe Bryant','Emma Watson'],
+  },
+  {
+    name:'Goat', zh:'羊', py:'Yáng', emoji:'🐑',
+    years:[1931,1943,1955,1967,1979,1991,2003,2015],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yin',
+    personality:'The Goat is the sign of creativity, gentleness, and deep artistic sensibility. Goat people are imaginative, compassionate, and intensely connected to beauty in all its forms. They thrive in nurturing, peaceful environments and are beloved for their kindness and generosity. Though sometimes seen as passive or indecisive, they possess quiet inner resilience. In Chinese culture the Goat represents harmony and the arts — it is considered one of the most fortunate signs.',
+    traits:['Creative','Gentle','Compassionate','Artistic','Harmonious'],
+    good_compat:[{z:'Rabbit',zh:'兔',py:'Tù',em:'🐰',why:'Artistic and empathetic connection'},{z:'Horse',zh:'马',py:'Mǎ',em:'🐴',why:'Complementary strengths'},{z:'Pig',zh:'猪',py:'Zhū',em:'🐷',why:'Shared warmth and generosity'}],
+    bad_compat:[{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Opposite values and pace'},{z:'Dog',zh:'狗',py:'Gǒu',em:'🐶',why:'Dog\'s directness wounds Goat'}],
+    chengyu:[
+      {zh:'心灵手巧',py:'xīn líng shǒu qiǎo',meaning:'Quick of mind and nimble of hand — naturally gifted',rel:'The Goat\'s exceptional artistic instinct and creative intelligence'},
+      {zh:'与人为善',py:'yǔ rén wéi shàn',meaning:'To treat others with kindness and goodness',rel:'The Goat\'s defining quality — profound, instinctive compassion for all'},
+      {zh:'温柔敦厚',py:'wēn róu dūn hòu',meaning:'Gentle, warm, and sincere in character',rel:'The Goat embodies this classical ideal of refined, tender goodness'},
+    ],
+    famous:['Michelangelo','Mark Twain','Steve Jobs','Bill Gates','Julia Roberts','Bruce Willis'],
+  },
+  {
+    name:'Monkey', zh:'猴', py:'Hóu', emoji:'🐒',
+    years:[1932,1944,1956,1968,1980,1992,2004,2016],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yang',
+    personality:'The Monkey is the trickster genius of the Chinese zodiac — witty, inventive, and endlessly entertaining. Monkeys are sharp, fast-thinking problem-solvers who can adapt to any situation with seemingly effortless ease. They are playful and sociable, with a mischievous streak that makes them both magnetic and occasionally unreliable. Behind the humour lies a formidable intellect and fierce competitive instinct. In Chinese culture the Monkey is associated with the legendary Sun Wukong — the Monkey King.',
+    traits:['Witty','Inventive','Adaptable','Sociable','Competitive'],
+    good_compat:[{z:'Dragon',zh:'龙',py:'Lóng',em:'🐉',why:'Mutual boldness and intellect'},{z:'Rat',zh:'鼠',py:'Shǔ',em:'🐭',why:'Both clever and quick-witted'},{z:'Snake',zh:'蛇',py:'Shé',em:'🐍',why:'Strategic minds in sync'}],
+    bad_compat:[{z:'Tiger',zh:'虎',py:'Hǔ',em:'🐯',why:'Monkey\'s tricks enrage Tiger'},{z:'Pig',zh:'猪',py:'Zhū',em:'🐷',why:'Pig finds Monkey exhausting'}],
+    chengyu:[
+      {zh:'随机应变',py:'suí jī yìng biàn',meaning:'To adapt instantly to any situation',rel:'The Monkey\'s greatest gift — improvising brilliantly under any circumstances'},
+      {zh:'机智过人',py:'jī zhì guò rén',meaning:'Intelligence and wit surpassing all others',rel:'Captures the Monkey\'s extraordinary mental sharpness and creative problem-solving'},
+      {zh:'七十二变',py:'qī shí èr biàn',meaning:'Seventy-two transformations — limitless versatility',rel:'A direct reference to Sun Wukong, the Monkey King — symbol of boundless adaptability'},
+    ],
+    famous:['Leonardo da Vinci','Charles Dickens','Julius Caesar','Elizabeth Taylor','Will Smith','Daniel Craig'],
+  },
+  {
+    name:'Rooster', zh:'鸡', py:'Jī', emoji:'🐓',
+    years:[1933,1945,1957,1969,1981,1993,2005,2017],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yin',
+    personality:'The Rooster is the sign of precision, confidence, and impeccable standards. Rooster people are hardworking, observant, and deeply proud of their achievements. They have an eye for detail that borders on perfectionism, and they are not shy about sharing their opinions. Outspoken and sometimes blunt, they are honest to a fault. Behind the bravado lies a dedicated, responsible individual who takes their duties seriously. The Rooster\'s crow announces a new day — they are natural heralds of change.',
+    traits:['Precise','Confident','Hardworking','Observant','Outspoken'],
+    good_compat:[{z:'Ox',zh:'牛',py:'Niú',em:'🐮',why:'Mutual discipline and hard work'},{z:'Snake',zh:'蛇',py:'Shé',em:'🐍',why:'Both intelligent and ambitious'},{z:'Dragon',zh:'龙',py:'Lóng',em:'🐉',why:'Complementary strengths'}],
+    bad_compat:[{z:'Rabbit',zh:'兔',py:'Tù',em:'🐰',why:'Rooster\'s bluntness clashes'},{z:'Rooster',zh:'鸡',py:'Jī',em:'🐓',why:'Two Roosters clash endlessly'}],
+    chengyu:[
+      {zh:'闻鸡起舞',py:'wén jī qǐ wǔ',meaning:'To hear the rooster crow and rise to practise — diligent self-improvement',rel:'A classical chengyu that literally features the Rooster — symbol of the Rooster\'s work ethic and discipline'},
+      {zh:'精益求精',py:'jīng yì qiú jīng',meaning:'To keep striving for even greater excellence',rel:'The Rooster\'s relentless perfectionism and refusal to settle for anything less than the best'},
+      {zh:'一丝不苟',py:'yī sī bù gǒu',meaning:'Not a single thread out of place — meticulous attention to detail',rel:'The Rooster\'s defining characteristic — exacting precision in everything they do'},
+    ],
+    famous:['Beyoncé','Jennifer Aniston','Britney Spears','Eric Clapton','Steffi Graf','Dolly Parton'],
+  },
+  {
+    name:'Dog', zh:'狗', py:'Gǒu', emoji:'🐶',
+    years:[1934,1946,1958,1970,1982,1994,2006,2018],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yang',
+    personality:'The Dog is the most loyal and trustworthy sign in the Chinese zodiac. Dog people are honest, warm, and deeply principled — they will stand by those they love through any storm. They have a strong sense of justice and will fight fiercely for what they believe is right. Sometimes anxious or prone to worry, they give far more to others than they demand in return. In Chinese culture, the Dog represents fidelity, protection, and the most human virtues.',
+    traits:['Loyal','Honest','Warm','Just','Protective'],
+    good_compat:[{z:'Tiger',zh:'虎',py:'Hǔ',em:'🐯',why:'Shared courage and loyalty'},{z:'Horse',zh:'马',py:'Mǎ',em:'🐴',why:'Mutual trust and freedom'},{z:'Rabbit',zh:'兔',py:'Tù',em:'🐰',why:'Warmth and understanding'}],
+    bad_compat:[{z:'Dragon',zh:'龙',py:'Lóng',em:'🐉',why:'Dog cannot trust Dragon'},{z:'Goat',zh:'羊',py:'Yáng',em:'🐑',why:'Different emotional needs'}],
+    chengyu:[
+      {zh:'忠心耿耿',py:'zhōng xīn gěng gěng',meaning:'Utterly loyal and devoted with all one\'s heart',rel:'The Dog\'s most defining quality — an unwavering, unconditional fidelity to those they love'},
+      {zh:'见义勇为',py:'jiàn yì yǒng wéi',meaning:'To see what is right and act with courage',rel:'The Dog\'s deep sense of justice — they cannot stand by when something is wrong'},
+      {zh:'以诚待人',py:'yǐ chéng dài rén',meaning:'To treat all people with genuine sincerity',rel:'The Dog lives by this principle — honest and authentic in every relationship'},
+    ],
+    famous:['Madonna','Michael Jackson','Elvis Presley','Winston Churchill','Mother Teresa','Bill Clinton'],
+  },
+  {
+    name:'Pig', zh:'猪', py:'Zhū', emoji:'🐷',
+    years:[1935,1947,1959,1971,1983,1995,2007,2019],
+    element_cycle:['Metal','Water','Wood','Fire','Earth'],
+    yinyang:'Yin',
+    personality:'The Pig is a symbol of abundance, generosity, and genuine happiness. Pig people are warm, sincere, and extraordinarily giving — they love life\'s pleasures and want to share them with everyone around them. Trusting and optimistic, they see the best in others, which makes them occasionally naive but also wonderfully refreshing. They work hard and enjoy the fruits of their labour without apology. In Chinese culture the Pig is associated with good fortune, wealth, and an honest heart.',
+    traits:['Generous','Warm','Sincere','Optimistic','Diligent'],
+    good_compat:[{z:'Rabbit',zh:'兔',py:'Tù',em:'🐰',why:'Gentle and warm connection'},{z:'Goat',zh:'羊',py:'Yáng',em:'🐑',why:'Shared warmth and generosity'},{z:'Tiger',zh:'虎',py:'Hǔ',em:'🐯',why:'Tiger\'s fire balanced by Pig\'s warmth'}],
+    bad_compat:[{z:'Snake',zh:'蛇',py:'Shé',em:'🐍',why:'Snake\'s complexity unsettles Pig'},{z:'Monkey',zh:'猴',py:'Hóu',em:'🐒',why:'Monkey\'s tricks exhaust Pig'}],
+    chengyu:[
+      {zh:'心宽体胖',py:'xīn kuān tǐ pàng',meaning:'A broad heart and a contented body — generosity brings ease',rel:'The Pig\'s life philosophy — openness and generosity naturally attract abundance'},
+      {zh:'助人为乐',py:'zhù rén wéi lè',meaning:'To find joy in helping others',rel:'The Pig\'s greatest source of happiness — giving freely and making others happy'},
+      {zh:'知足常乐',py:'zhī zú cháng lè',meaning:'One who knows contentment is always happy',rel:'The Pig\'s enviable wisdom — genuine appreciation for what they have'},
+    ],
+    famous:['Dalai Lama','Arnold Schwarzenegger','Hillary Clinton','Elton John','Woody Allen','Ernest Hemingway'],
+  },
+];
+
+// ── Elements cycle ────────────────────────────────────────────
+// Element derives from Heavenly Stem: 甲乙=Wood, 丙丁=Fire, 戊己=Earth, 庚辛=Metal, 壬癸=Water
+// Anchored to 1924 = 甲 (Wood)
+function getElement(chineseYear) {
+  const stemIdx = ((chineseYear - 1924) % 10 + 10) % 10;
+  return ['Wood','Wood','Fire','Fire','Earth','Earth','Metal','Metal','Water','Water'][stemIdx];
+}
+
+const ELEMENT_ZH = {Wood:{zh:'木',py:'Mù'},Fire:{zh:'火',py:'Huǒ'},Earth:{zh:'土',py:'Tǔ'},Metal:{zh:'金',py:'Jīn'},Water:{zh:'水',py:'Shuǐ'}};
+
+// ── Chinese calendar conversion (simplified lunisolar approximation) ──
+// Chinese New Year dates 1924-2030 (approximate)
+const CNY = {
+  // Source: pinyin.info/chinese_new_year verified dates
+  1924:[2,5],  1925:[1,24], 1926:[2,13], 1927:[2,2],  1928:[1,23],
+  1929:[2,10], 1930:[1,30], 1931:[2,17], 1932:[2,6],  1933:[1,26],
+  1934:[2,14], 1935:[2,4],  1936:[1,24], 1937:[2,11], 1938:[1,31],
+  1939:[2,19], 1940:[2,8],  1941:[1,27], 1942:[2,15], 1943:[2,5],
+  1944:[1,25], 1945:[2,13], 1946:[2,2],  1947:[1,22], 1948:[2,10],
+  1949:[1,29], 1950:[2,17], 1951:[2,6],  1952:[1,27], 1953:[2,14],
+  1954:[2,3],  1955:[1,24], 1956:[2,12], 1957:[1,31], 1958:[2,18],
+  1959:[2,8],  1960:[1,28], 1961:[2,15], 1962:[2,5],  1963:[1,25],
+  1964:[2,13], 1965:[2,2],  1966:[1,21], 1967:[2,9],  1968:[1,30],
+  1969:[2,17], 1970:[2,6],  1971:[1,27], 1972:[2,15], 1973:[2,3],
+  1974:[1,23], 1975:[2,11], 1976:[1,31], 1977:[2,18], 1978:[2,7],
+  1979:[1,28], 1980:[2,16], 1981:[2,5],  1982:[1,25], 1983:[2,13],
+  1984:[2,2],  1985:[2,20], 1986:[2,9],  1987:[1,29], 1988:[2,17],
+  1989:[2,6],  1990:[1,27], 1991:[2,15], 1992:[2,4],  1993:[1,23],
+  1994:[2,10], 1995:[1,31], 1996:[2,19], 1997:[2,7],  1998:[1,28],
+  1999:[2,16], 2000:[2,5],  2001:[1,24], 2002:[2,12], 2003:[2,1],
+  2004:[1,22], 2005:[2,9],  2006:[1,29], 2007:[2,18], 2008:[2,7],
+  2009:[1,26], 2010:[2,14], 2011:[2,3],  2012:[1,23], 2013:[2,10],
+  2014:[1,31], 2015:[2,19], 2016:[2,8],  2017:[1,28], 2018:[2,16],
+  2019:[2,5],  2020:[1,25], 2021:[2,12], 2022:[2,1],  2023:[1,22],
+  2024:[2,10], 2025:[1,29], 2026:[2,17], 2027:[2,6],  2028:[1,26],
+  2029:[2,13], 2030:[2,3],
+};
+
+function getCNY(year) {
+  const d = CNY[year];
+  if (!d) return null;
+  return new Date(year, d[0]-1, d[1]);
+}
+
+function getLunarInfo(date) {
+  const year = date.getFullYear();
+  const cny = getCNY(year);
+  const prevCny = getCNY(year - 1);
+
+  // Determine Chinese year
+  let chineseYear, dayOfYear;
+  if (cny && date >= cny) {
+    chineseYear = year;
+    dayOfYear = Math.floor((date - cny) / 86400000) + 1;
+  } else if (prevCny) {
+    chineseYear = year - 1;
+    dayOfYear = Math.floor((date - prevCny) / 86400000) + 1;
+  } else {
+    chineseYear = year;
+    dayOfYear = 1;
+  }
+
+  // Heavenly stems (天干) — anchored to 1924 = 甲
+  const stems    = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const stemsPy  = ['Jiǎ','Yǐ','Bǐng','Dīng','Wù','Jǐ','Gēng','Xīn','Rén','Guǐ'];
+  const stemsEn  = ['Wood Yang','Wood Yin','Fire Yang','Fire Yin','Earth Yang','Earth Yin','Metal Yang','Metal Yin','Water Yang','Water Yin'];
+
+  // Earthly branches (地支) — anchored to 1924 = 子
+  const branches   = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const branchesPy = ['Zǐ','Chǒu','Yín','Mǎo','Chén','Sì','Wǔ','Wèi','Shēn','Yǒu','Xū','Hài'];
+
+  const offset   = chineseYear - 1924;
+  const stemIdx  = ((offset % 10) + 10) % 10;
+  const branchIdx= ((offset % 12) + 12) % 12;
+
+  // Approximate lunar month (每月约29.5天)
+  const lunarMonth = Math.min(12, Math.floor((dayOfYear - 1) / 29.5) + 1);
+  const lunarDay = Math.max(1, Math.round(((dayOfYear - 1) % 29.5) + 1));
+
+  const monthNames = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  const monthPy = ['Zhēngyuè','Èryuè','Sānyuè','Sìyuè','Wǔyuè','Liùyuè','Qīyuè','Bāyuè','Jiǔyuè','Shíyuè','Shíyīyuè','Shíèryuè'];
+  const dayNums = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+  const dayNumsPy = ['Chūyī','Chūèr','Chūsān','Chūsì','Chūwǔ','Chūliù','Chūqī','Chūbā','Chūjiǔ','Chūshí','Shíyī','Shíèr','Shísān','Shísì','Shíwǔ','Shíliù','Shíqī','Shíbā','Shíjiǔ','Èrshí','Niànyī','Niànèr','Niànsān','Niànsì','Niànwǔ','Niànliù','Niànqī','Niànbā','Niànjiǔ','Sānshí'];
+
+  return {
+    chineseYear,
+    stem: stems[stemIdx], stemPy: stemsPy[stemIdx], stemEn: stemsEn[stemIdx],
+    branch: branches[branchIdx], branchPy: branchesPy[branchIdx],
+    month: monthNames[lunarMonth-1], monthPy: monthPy[lunarMonth-1],
+    day: dayNums[Math.min(lunarDay-1, 29)], dayPy: dayNumsPy[Math.min(lunarDay-1, 29)],
+    lunarMonth, lunarDay,
+  };
+}
+
+function getZodiac(date) {
+  const year = date.getFullYear();
+  const cny = getCNY(year);
+  const chineseYear = (cny && date >= cny) ? year : year - 1;
+  const zodiacIdx = ((chineseYear - 4) % 12 + 12) % 12;
+  return { sign: ZODIAC[zodiacIdx], chineseYear };
+}
+
+// ── Main calculate ────────────────────────────────────────────
+function calculate() {
+  const day   = parseInt(document.getElementById('selDay').value);
+  const month = parseInt(document.getElementById('selMonth').value);
+  const year  = parseInt(document.getElementById('selYear').value);
+
+  const date = new Date(year, month-1, day);
+  if (isNaN(date.getTime())) { alert('Please enter a valid date.'); return; }
+
+  const { sign, chineseYear } = getZodiac(date);
+  const lunar = getLunarInfo(date);
+  const element = getElement(chineseYear);
+  const elZh = ELEMENT_ZH[element];
+
+  // Hide input, show result
+  document.getElementById('inputScreen').style.display = 'none';
+  const rs = document.getElementById('resultScreen');
+  rs.style.display = 'block';
+
+  // Hero
+  document.getElementById('rEmoji').textContent = sign.emoji;
+  document.getElementById('rZh').textContent = sign.zh;
+  document.getElementById('rPinyin').textContent = sign.py;
+  document.getElementById('rEn').textContent = `Year of the ${sign.name}`;
+  document.getElementById('rElement').textContent = `${elZh.zh} ${elZh.py} · ${element}`;
+  document.getElementById('rYear').textContent = `${chineseYear} 年`;
+  document.getElementById('rYinYang').textContent = sign.yinyang === 'Yang' ? '阳 Yáng' : '阴 Yīn';
+
+  // Chinese calendar
+  document.getElementById('calGrid').innerHTML = `
+    <div class="cal-item">
+      <div class="cal-item-label">Chinese Year</div>
+      <div class="cal-item-zh">${lunar.stem}${lunar.branch}年</div>
+      <div class="cal-item-pinyin">${lunar.stemPy}-${lunar.branchPy} Nián</div>
+      <div class="cal-item-en">${chineseYear}</div>
+    </div>
+    <div class="cal-item">
+      <div class="cal-item-label">Element Stem</div>
+      <div class="cal-item-zh">${lunar.stem}</div>
+      <div class="cal-item-pinyin">${lunar.stemPy}</div>
+      <div class="cal-item-en">${lunar.stemEn}</div>
+    </div>
+    <div class="cal-item">
+      <div class="cal-item-label">Lunar Month</div>
+      <div class="cal-item-zh">${lunar.month}</div>
+      <div class="cal-item-pinyin">${lunar.monthPy}</div>
+      <div class="cal-item-en">Month ${lunar.lunarMonth}</div>
+    </div>
+    <div class="cal-item">
+      <div class="cal-item-label">Lunar Day</div>
+      <div class="cal-item-zh">${lunar.day}</div>
+      <div class="cal-item-pinyin">${lunar.dayPy}</div>
+      <div class="cal-item-en">Day ${lunar.lunarDay}</div>
+    </div>`;
+
+  // Personality
+  document.getElementById('rPersonality').textContent = sign.personality;
+  document.getElementById('rTraits').innerHTML = sign.traits.map(t => `<div class="trait-pill">${t}</div>`).join('');
+
+  // Compatibility
+  const goodHTML = sign.good_compat.map(c => `
+    <div class="compat-sign">
+      <div class="compat-sign-emoji">${c.em}</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="compat-sign-zh">${c.zh}</span>
+          <span style="font-size:12px;color:var(--ink-light)">${c.py}</span>
+          <span style="font-size:12px;color:var(--ink-mid)">${c.z}</span>
+        </div>
+        <div class="compat-sign-info">${c.why}</div>
+      </div>
+    </div>`).join('');
+  const badHTML = sign.bad_compat.map(c => `
+    <div class="compat-sign">
+      <div class="compat-sign-emoji">${c.em}</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="compat-sign-zh">${c.zh}</span>
+          <span style="font-size:12px;color:var(--ink-light)">${c.py}</span>
+          <span style="font-size:12px;color:var(--ink-mid)">${c.z}</span>
+        </div>
+        <div class="compat-sign-info">${c.why}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('rCompat').innerHTML = `
+    <div class="compat-card good">
+      <div class="compat-label good">✓ Most compatible</div>
+      <div class="compat-signs">${goodHTML}</div>
+    </div>
+    <div class="compat-card bad">
+      <div class="compat-label bad">✗ Most challenging</div>
+      <div class="compat-signs">${badHTML}</div>
+    </div>`;
+
+  // Chengyu
+  document.getElementById('rChengyu').innerHTML = sign.chengyu.map(c => `
+    <div class="chengyu-item">
+      <div class="chengyu-zh">${c.zh}</div>
+      <div class="chengyu-pinyin">${c.py}</div>
+      <div class="chengyu-meaning">${c.meaning}</div>
+      <div class="chengyu-relevance">${c.rel}</div>
+    </div>`).join('');
+
+  // Famous
+  document.getElementById('rFamous').innerHTML = sign.famous.map(f => `<div class="famous-pill">${f}</div>`).join('');
+
+  // Store for share
+  window._shareSign = { name: sign.name, zh: sign.zh, py: sign.py, year: chineseYear, element };
+
+  rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function restart() {
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('inputScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function shareResult() {
+  const s = window._shareSign;
+  if (!s) return;
+  const text = `I was born in the Year of the ${s.name} (${s.zh} · ${s.py}) — ${s.element} element, ${s.year}. Discover your Chinese zodiac at MandarinZest.com 🐉`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.share-btn');
+      btn.textContent = 'Copied! ✓';
+      setTimeout(() => btn.textContent = 'Share my sign', 2000);
+    });
+  }
+}
+</script>
+</body>
+</html>
